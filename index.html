@@ -134,6 +134,9 @@
     <ul id="order-list"></ul>
     <h2>Order Summary</h2>
     <ul id="order-summary" class="order-summary"></ul>
+
+    <!-- Button to save orders to JSON file -->
+    <button id="save-json" onclick="saveOrdersToJson()">Save Orders to JSON</button>
     <script>
         const flavorPrice = 5;
         let orders = JSON.parse(localStorage.getItem('orders')) || [];
@@ -263,6 +266,20 @@
             editIndex = index;
             document.querySelector('button[type="submit"]').textContent = 'Update Order';
         }
+        // Function to save orders to a JSON file
+        function saveOrdersToJson() {
+    const orders = JSON.parse(localStorage.getItem('orders')) || [];
+    const dataStr = JSON.stringify(orders, null, 2);
+    
+    const date = new Date();
+    const dateStr = date.toISOString().split('T')[0]; // Format the date as YYYY-MM-DD
+    
+    const a = document.createElement('a');
+    a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+    a.download = `orders_${dateStr}.json`; // Include the current date in the filename
+    a.click();
+}
+
         function displaySummary() {
             const orderSummary = document.getElementById('order-summary');
             orderSummary.innerHTML = '';
