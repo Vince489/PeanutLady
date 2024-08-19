@@ -92,19 +92,20 @@ function displayOrders() {
 }
 // Function to load orders from a file
 function loadOrders() {
-    const fileInput = document.getElementById('fileInput');
-    if (fileInput.files.length === 0) {
-        alert('Please select a file.');
-        return;
-    }
-    const file = fileInput.files[0];
-    const reader = new FileReader();
-    reader.onload = function(event) {
-        orders = JSON.parse(event.target.result);
-        displayOrders();
-        displaySummary();
-    };
-    reader.readAsText(file);
+  const fileInput = document.getElementById('fileInput');
+  if (fileInput.files.length === 0) {
+      alert('Please select a file.');
+      return;
+  }
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+  reader.onload = function(event) {
+      orders = JSON.parse(event.target.result);
+      localStorage.setItem('orders', JSON.stringify(orders)); // Save orders to local storage
+      displayOrders();
+      displaySummary();
+  };
+  reader.readAsText(file);
 }
 
 function deleteOrder(index) {
