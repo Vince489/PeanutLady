@@ -8,6 +8,8 @@
 </head>
 <body>
     <h1>Boiled Peanut Orders</h1>
+    <button id="start-order-btn">Start Order Process</button>
+
     <form id="order-form">
         <label for="customer-name">Customer Name:</label>
         <input type="text" id="customer-name" required>
@@ -43,7 +45,7 @@
     <button id="delete-all" class="delete-button" onclick="deleteAllOrders()">Delete All Orders</button>
     <!-- Button to load orders from JSON -->
     <input type="file" id="fileInput" accept=".json">
-    <button onclick="loadOrders()">Load Orders from File</button>
+    <button onclick="loadOrders()">Load Orders from JSON</button>
 
     <script src="script.js"></script>
 </body>

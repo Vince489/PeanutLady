@@ -1,3 +1,141 @@
+const synth = window.speechSynthesis;
+const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+
+recognition.continuous = false;
+recognition.interimResults = false;
+recognition.lang = 'en-US';
+
+let isListening = false;
+
+function speak(text) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    synth.speak(utterance);
+    return new Promise(resolve => {
+        utterance.onend = resolve;
+    });
+}
+
+function listen() {
+    return new Promise(resolve => {
+        recognition.start();
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript.trim().toLowerCase();
+            resolve(transcript);
+        };
+    });
+}
+
+function parseQuantity(input) {
+    // Try to directly parse the input as a number
+    let quantity = parseInt(input, 10);
+
+    if (!isNaN(quantity)) {
+        return quantity;
+    }
+
+    // If direct parsing fails, try converting number words to numbers
+    const numberWords = {
+        'one': 1,
+        'two': 2,
+        'three': 3,
+        'four': 4,
+        'five': 5,
+        'six': 6,
+        'seven': 7,
+        'eight': 8,
+        'nine': 9,
+        'ten': 10
+    };
+
+    return numberWords[input.toLowerCase()] || null;
+}
+
+async function askForQuantity(flavor) {
+    let confirmed = false;
+    let quantity;
+    while (!confirmed) {
+        await speak(`How many ${flavor} peanuts would you like?`);
+        const quantityString = await listen();
+        console.log(`Quantity (string): ${quantityString}`); // Debugging
+        
+        quantity = parseQuantity(quantityString);
+        if (quantity === null || quantity <= 0) {
+            await speak("Sorry, I didn't understand the quantity. Please say a number.");
+            continue;
+        }
+
+        await speak(`You said ${quantity}, is that correct?`);
+        const confirmation = await listen();
+        if (confirmation.includes('yes')) {
+            confirmed = true;
+        } else {
+            await speak("Let's try again.");
+        }
+    }
+    return quantity;
+}
+
+async function startOrderProcess() {
+    isListening = true;
+    while (isListening) {
+        await speak("Would you like to start a new order?");
+        let response = await listen();
+        if (response.includes('yes')) {
+            await speak("What is the customer's name?");
+            const customerName = await listen();
+            console.log(`Customer name: ${customerName}`); // Debugging
+
+            let order = {
+                customerName,
+                flavors: [],
+                timestamp: new Date().toLocaleString(),
+                total: 0
+            };
+
+            let addingFlavors = true;
+            while (addingFlavors) {
+                await speak("What flavor would you like?");
+                const flavor = await listen();
+                console.log(`Flavor: ${flavor}`); // Debugging
+
+                const quantity = await askForQuantity(flavor);
+                console.log(`Quantity (confirmed): ${quantity}`); // Debugging
+
+                order.flavors.push({ flavor, quantity });
+                order.total += quantity * flavorPrice; // Assume `flavorPrice` is defined elsewhere
+                console.log(`Current order: ${JSON.stringify(order)}`); // Debugging
+
+                await speak("Would you like to add another flavor to this order?");
+                response = await listen();
+                if (!response.includes('yes')) {
+                    addingFlavors = false;
+                }
+            }
+
+            orders.push(order);
+            localStorage.setItem('orders', JSON.stringify(orders));
+            displayOrders();
+            displaySummary();
+
+            await speak("Order submitted. Would you like to create a new order?");
+            response = await listen();
+            if (!response.includes('yes')) {
+                isListening = false;
+                await speak("Thank you for using our peanut ordering app.");
+            }
+        } else {
+            isListening = false;
+            await speak("Okay, stopping now.");
+        }
+    }
+}
+
+// Example of how to start the speech-based order process
+document.getElementById('start-order-btn').addEventListener('click', () => {
+    startOrderProcess();
+});
+
+
 const flavorPrice = 5;
 let orders = JSON.parse(localStorage.getItem('orders')) || [];
 let flavorIndex = 1;
